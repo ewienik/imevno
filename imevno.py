@@ -25,9 +25,11 @@ def main():
     screen = cv2.imread(path_screen)
 
     names = []
+    found = False
     for entry in os.scandir(path_dir_icons):
         if not entry.is_file():
             continue
+        found = True
         icon = cv2.imread(entry.path)
         res = cv2.matchTemplate(screen, icon, cv2.TM_SQDIFF)
         min_val, _, _, _ = cv2.minMaxLoc(res)
@@ -40,6 +42,15 @@ def main():
             "You should check remote system for:\n" + ', '.join(names),
             "notification-message-im"
         ).show()
+        return
+
+    if not found:
+        notify2.Notification(
+            "Remote notification",
+            "No icons for checking found in " + path_dir_icons,
+            "notification-message-im"
+        ).show()
+        return
 
 
 def signal_handler(signal, frame):
@@ -49,5 +60,12 @@ def signal_handler(signal, frame):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
     while True:
-        main()
+        try:
+            main()
+        except:
+            notify2.Notification(
+                "Remote notification",
+                "Exception:\n" + str(sys.exc_info()[0]),
+                "notification-message-im"
+            ).show()
         time.sleep(SLEEP)
