@@ -8,8 +8,14 @@ import sys
 import time
 
 
-THRESHOLD = 1000
+THRESHOLD = 100000
 SLEEP = 30
+
+
+def notify(txt):
+    notification = notify2.Notification("Remote notification", txt, "notification-message-im")
+    notification.set_urgency(notify2.URGENCY_CRITICAL)
+    notification.show()
 
 
 def main():
@@ -19,8 +25,6 @@ def main():
 
     path_screen = sys.argv[1]
     path_dir_icons = sys.argv[2]
-
-    notify2.init('Imevno')
 
     screen = cv2.imread(path_screen)
 
@@ -37,19 +41,11 @@ def main():
             names.append(os.path.splitext(entry.name)[0])
 
     if len(names) > 0:
-        notify2.Notification(
-            "Remote notification",
-            "You should check remote system for:\n" + ', '.join(names),
-            "notification-message-im"
-        ).show()
+        notify("You should check remote system for:\n" + ', '.join(names))
         return
 
     if not found:
-        notify2.Notification(
-            "Remote notification",
-            "No icons for checking found in " + path_dir_icons,
-            "notification-message-im"
-        ).show()
+        notify("No icons for checking found in " + path_dir_icons)
         return
 
 
@@ -59,13 +55,11 @@ def signal_handler(signal, frame):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
+    notify2.init('Imevno')
+    notify("Start listen with args " + ' '.join(sys.argv))
     while True:
         try:
             main()
         except:
-            notify2.Notification(
-                "Remote notification",
-                "Exception:\n" + str(sys.exc_info()[0]),
-                "notification-message-im"
-            ).show()
+            notify("Exception:\n" + str(sys.exc_info()[0]))
         time.sleep(SLEEP)
